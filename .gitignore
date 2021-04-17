@@ -1,0 +1,11 @@
+*.o
+*.class
+*.tdat
+*.out
+*.pyc
+.ipynb_checkpoints
+
+.vscode
+__pycache__
+**/__pycache__
+

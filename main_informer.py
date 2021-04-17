@@ -88,7 +88,7 @@ def parse_args():
 
     return args
 
-def main(args):
+def main_loop(args):
     Exp = Exp_Informer
 
     for ii in range(args.itr):

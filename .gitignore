@@ -3,9 +3,13 @@
 *.tdat
 *.out
 *.pyc
+
 .ipynb_checkpoints
 
 .vscode
 __pycache__
 **/__pycache__
 
+checkpoints
+data/ETT
+results

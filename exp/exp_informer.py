@@ -1,6 +1,10 @@
-from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
+from data.data_loader_etth import Dataset_ETT_hour
+from data.data_loader_ettm import Dataset_ETT_minute
+from data.data_loader_custm import Dataset_Custom
+from data.data_loader_pred import Dataset_Pred
 from exp.exp_basic import Exp_Basic
-from models.model import Informer, InformerStack
+from models.model_informer import Informer
+from models.model_stack import InformerStack
 
 from utils.tools import EarlyStopping, adjust_learning_rate
 from utils.metrics import metric
@@ -103,7 +107,7 @@ class Exp_Informer(Exp_Basic):
         return model_optim
     
     def _select_criterion(self):
-        criterion =  nn.MSELoss()
+        criterion = nn.MSELoss()
         return criterion
 
     def vali(self, vali_data, vali_loader, criterion):
@@ -161,7 +165,7 @@ class Exp_Informer(Exp_Basic):
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
         
         model_optim = self._select_optimizer()
-        criterion =  self._select_criterion()
+        criterion = self._select_criterion()
 
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()

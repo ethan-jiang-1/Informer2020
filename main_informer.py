@@ -2,8 +2,6 @@ import argparse
 import os
 import torch
 
-from exp.exp_informer import Exp_Informer
-
 def parse_args():
     parser = argparse.ArgumentParser(description='[Informer] Long Sequences Forecasting')
 
@@ -89,6 +87,7 @@ def parse_args():
     return args
 
 def main_loop(args):
+    from exp.exp_informer import Exp_Informer    
     Exp = Exp_Informer
 
     for ii in range(args.itr):
@@ -109,7 +108,9 @@ def main_loop(args):
             exp.predict(setting, True)
 
         torch.cuda.empty_cache()
+        return exp, setting
+
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args)
+    main_loop(args)

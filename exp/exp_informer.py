@@ -272,6 +272,7 @@ class Exp_Informer(Exp_Basic):
         return best_model_path
 
     def test(self, setting, data_type="test"):
+        print("test data_type", data_type)
         test_data, test_loader = self._get_data(flag=data_type)
         
         self.model.eval()

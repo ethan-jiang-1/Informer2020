@@ -344,9 +344,9 @@ class Exp_Informer(Exp_Basic):
             sdict = torch.load(best_model_path)
 
             self.model.load_state_dict(sdict["state_dict"])
-            self._global_iter_count = sdict["global_iter_count"]
             self._select_optimizer.load_state_dict(sdict["optm_state_dict"])
-            self.criterion = sdict["loss"]
+            self._global_iter_count = sdict["global_iter_count"]
+            #self.criterion = sdict["loss"]
             print("best_model found and loaded", best_model_path, self.get_global_iter_count())
         else:
             print("no saved best_model found")

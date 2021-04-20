@@ -41,6 +41,6 @@ class Inspector(object):
         batch_x_mark = batch_x_mark.float()
         batch_y_mark = batch_y_mark.float()
 
-        summary(model, [batch_x.shape, batch_x_mark.shape, batch_y.shape, batch_y_mark.shape])
-
+        ret = summary(model, [batch_x.shape, batch_x_mark.shape, batch_y.shape, batch_y_mark.shape])
+        return ret
     

@@ -20,4 +20,5 @@ print(dataloader)
 odict = Inspector.inspect_obj(dataset)
 #print(odict)
 
-Inspector.inspect_model(exp.model, args, dataloader)
+ret = Inspector.inspect_model(exp.model, args, dataloader)
+print(ret)

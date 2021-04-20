@@ -48,10 +48,9 @@ class EarlyStopping:
         
         sdict = {}
         sdict["state_dict"] = model.state_dict()
-        if self.trainer is not None:
-            sdict["global_iter_count"] = self.trainer.get_global_iter_count()
-        else:
-            sdict["global_iter_count"] = 0
+        sdict["global_iter_count"] = self.trainer.get_global_iter_count()
+        sdict["optm_state_dict"] = self.trainer._select_optimizer().state_dict()
+        sdict["loss"] = self.trainer._select_criterion()
         #torch.save(model.state_dict(), path+'/'+'checkpoint.pth')
         torch.save(sdict, path+'/'+'checkpoint.pth')
         self.val_loss_min = val_loss

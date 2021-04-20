@@ -28,6 +28,8 @@ class Exp_Informer(Exp_Basic):
     def __init__(self, args):
         super(Exp_Informer, self).__init__(args)
         self._global_iter_count = 0
+        self.model_optim = None
+        self.criterion = None
 
     def get_global_iter_count(self):
         return self._global_iter_count
@@ -115,12 +117,14 @@ class Exp_Informer(Exp_Basic):
         return data_set, data_loader
 
     def _select_optimizer(self):
-        model_optim = optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
-        return model_optim
+        if self.model_optim is None:
+            self.model_optim = optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
+        return self.model_optim
     
     def _select_criterion(self):
-        criterion = nn.MSELoss()
-        return criterion
+        if self.criterion is None:
+            self.criterion = nn.MSELoss()
+        return self.criterion
 
     def vali(self, vali_data, vali_loader, criterion):
         self.model.eval()
@@ -162,7 +166,7 @@ class Exp_Informer(Exp_Basic):
         self.model.train()
         return total_loss
         
-    def train(self, setting):
+    def train(self, setting, saved_optim=None, saved_criterion=None):
         train_data, train_loader = self._get_data(flag = 'train')
         vali_data, vali_loader = self._get_data(flag = 'val')
         test_data, test_loader = self._get_data(flag = 'test')
@@ -338,8 +342,11 @@ class Exp_Informer(Exp_Basic):
         best_model_path = path+'/'+'checkpoint.pth'
         if os.path.isfile(best_model_path):
             sdict = torch.load(best_model_path)
+
             self.model.load_state_dict(sdict["state_dict"])
             self._global_iter_count = sdict["global_iter_count"]
+            self._select_optimizer.load_state_dict(sdict["optm_state_dict"])
+            self.criterion = sdict["loss"]
             print("best_model found and loaded", best_model_path, self.get_global_iter_count())
         else:
             print("no saved best_model found")

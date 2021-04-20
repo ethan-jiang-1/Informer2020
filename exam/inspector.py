@@ -26,3 +26,21 @@ class Inspector(object):
             odict[key] = value
         cls.dump_dict(odict)
         return odict
+
+    @classmethod
+    def inspect_model(cls, model, args, dataloader):
+        import torch
+        from torchinfo import summary
+
+        for batch_x,batch_y,batch_x_mark,batch_y_mark in dataloader:
+            break
+
+        batch_x = batch_x.float()
+        batch_y = batch_y.float()
+        
+        batch_x_mark = batch_x_mark.float()
+        batch_y_mark = batch_y_mark.float()
+
+        summary(model, [batch_x.shape, batch_x_mark.shape, batch_y.shape, batch_y_mark.shape])
+
+    

@@ -47,6 +47,10 @@ class Dataset_ETT_hour(Dataset):
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
 
+        #rule of splitting the data:
+        # train 0                - 12*30*24         (8 hours)
+        # val   12*30*24         - 12*30*24+4*30*24 (4 hours)
+        # test  12*30*24+4*30*24 - 12*30*24+8*30*24 (4 hours)
         border1s = [0, 12*30*24 - self.seq_len, 12*30*24+4*30*24 - self.seq_len]
         border2s = [12*30*24, 12*30*24+4*30*24, 12*30*24+8*30*24]
         border1 = border1s[self.set_type]

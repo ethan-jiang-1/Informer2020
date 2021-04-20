@@ -5,6 +5,7 @@ from exam.args_setting import create_args
 from exp.exp_informer import Exp_Informer
 from exam.inspector import Inspector
 
+
 args = create_args()
 args.root_path = "./data/ETT"
 #args.use_gpu = False
@@ -18,3 +19,5 @@ print(dataloader)
 
 odict = Inspector.inspect_obj(dataset)
 #print(odict)
+
+Inspector.inspect_model(exp.model, args, dataloader)

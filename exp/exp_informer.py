@@ -25,10 +25,10 @@ warnings.filterwarnings('ignore')
 class Exp_Informer(Exp_Basic):
     def __init__(self, args):
         super(Exp_Informer, self).__init__(args)
-        self._train_iter_count = 0
+        self._global_iter_count = 0
 
-    def get_train_iter_count(self):
-        return self._train_iter_count
+    def get_global_iter_count(self):
+        return self._global_iter_count
     
     def _build_model(self):
         model_dict = {
@@ -177,7 +177,7 @@ class Exp_Informer(Exp_Basic):
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
-            self._train_iter_count += 1
+            self._global_iter_count += 1
 
             self.model.train()
             epoch_time = time.time()
@@ -237,14 +237,14 @@ class Exp_Informer(Exp_Basic):
                     loss.backward()
                     model_optim.step()
 
-            print("Epoch: {} cost time: {} @gloabl_train_iter_count:{}".format(epoch+1, time.time()-epoch_time, self.get_train_iter_count()))
+            print("Epoch: {} cost time: {} @gloabl_global_iter_count:{}".format(epoch+1, time.time()-epoch_time, self.get_global_iter_count()))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
             writer = SummaryWriter()
-            writer.add_scalar("train_loss", train_loss, global_step=self.get_train_iter_count())
-            writer.add_scalar("vali_loss", vali_loss, global_step=self.get_train_iter_count())
-            writer.add_scalar("test_loss", test_loss, global_step=self.get_train_iter_count())
+            writer.add_scalar("train_loss", train_loss, global_step=self.get_global_iter_count())
+            writer.add_scalar("vali_loss", vali_loss, global_step=self.get_global_iter_count())
+            writer.add_scalar("test_loss", test_loss, global_step=self.get_global_iter_count())
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
@@ -258,7 +258,7 @@ class Exp_Informer(Exp_Basic):
         best_model_path = path+'/'+'checkpoint.pth'
         sdict = torch.load(best_model_path)
         self.model.load_state_dict(sdict["state_dict"])
-        self._train_iter_count = sdict["train_iter_count"]
+        self._global_iter_count = sdict["global_iter_count"]
         
         return best_model_path
 
@@ -331,7 +331,7 @@ class Exp_Informer(Exp_Basic):
             best_model_path = path+'/'+'checkpoint.pth'
             sdict = torch.load(best_model_path)
             self.model.load_state_dict(sdict["state_dict"])
-            self._train_iter_count = sdict["train_iter_count"]
+            self._global_iter_count = sdict["global_iter_count"]
 
         self.model.eval()
         

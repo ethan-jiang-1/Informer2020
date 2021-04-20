@@ -17,7 +17,7 @@ def adjust_learning_rate(optimizer, epoch, args):
         print('Updating learning rate to {}'.format(lr))
 
 class EarlyStopping:
-    def __init__(self, patience=7, verbose=False, delta=0):
+    def __init__(self, patience=7, verbose=False, delta=0, trainer=None):
         self.patience = patience
         self.verbose = verbose
         self.counter = 0
@@ -25,6 +25,7 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
+        self.trainer = trainer
 
     def __call__(self, val_loss, model, path):
         score = -val_loss
@@ -43,8 +44,16 @@ class EarlyStopping:
 
     def save_checkpoint(self, val_loss, model, path):
         if self.verbose:
-            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), path+'/'+'checkpoint.pth')
+            print(f'##Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
+        
+        sdict = {}
+        sdict["state_dict"] = model.state_dict()
+        if self.trainer is not None:
+            sdict["train_iter_count"] = self.trainer.get_train_iter_count()
+        else:
+            sdict["train_iter_count"] = 0
+        #torch.save(model.state_dict(), path+'/'+'checkpoint.pth')
+        torch.save(sdict, path+'/'+'checkpoint.pth')
         self.val_loss_min = val_loss
 
 class dotdict(dict):

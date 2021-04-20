@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 from torch.utils.data import DataLoader
-
+from torch.utils.tensorboard import SummaryWriter
 import os
 import time
 
@@ -25,6 +25,10 @@ warnings.filterwarnings('ignore')
 class Exp_Informer(Exp_Basic):
     def __init__(self, args):
         super(Exp_Informer, self).__init__(args)
+        self._train_iter_count = 0
+
+    def get_train_iter_count(self):
+        return self._train_iter_count
     
     def _build_model(self):
         model_dict = {
@@ -162,7 +166,7 @@ class Exp_Informer(Exp_Basic):
         time_now = time.time()
         
         train_steps = len(train_loader)
-        early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
+        early_stopping = EarlyStopping(patience=self.args.patience, verbose=True, trainer=self)
         
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
@@ -178,6 +182,7 @@ class Exp_Informer(Exp_Basic):
             epoch_time = time.time()
             for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(train_loader):
                 iter_count += 1
+                self._train_iter_count += 1
                 
                 model_optim.zero_grad()
                 
@@ -232,10 +237,14 @@ class Exp_Informer(Exp_Basic):
                     loss.backward()
                     model_optim.step()
 
-            print("Epoch: {} cost time: {}".format(epoch+1, time.time()-epoch_time))
+            print("Epoch: {} cost time: {} @gloabl_train_iter_count:{}".format(epoch+1, time.time()-epoch_time, self.get_train_iter_count()))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
+            writer = SummaryWriter()
+            writer.add_scalar("train_loss", train_loss, global_step=self.get_train_iter_count())
+            writer.add_scalar("vali_loss", vali_loss, global_step=self.get_train_iter_count())
+            writer.add_scalar("test_loss", test_loss, global_step=self.get_train_iter_count())
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
@@ -247,7 +256,9 @@ class Exp_Informer(Exp_Basic):
             adjust_learning_rate(model_optim, epoch+1, self.args)
             
         best_model_path = path+'/'+'checkpoint.pth'
-        self.model.load_state_dict(torch.load(best_model_path))
+        sdict = torch.load(best_model_path)
+        self.model.load_state_dict(sdict["state_dict"])
+        self._train_iter_count = sdict["train_iter_count"]
         
         return best_model_path
 
@@ -318,7 +329,9 @@ class Exp_Informer(Exp_Basic):
         if load:
             path = os.path.join(self.args.checkpoints, setting)
             best_model_path = path+'/'+'checkpoint.pth'
-            self.model.load_state_dict(torch.load(best_model_path))
+            sdict = torch.load(best_model_path)
+            self.model.load_state_dict(sdict["state_dict"])
+            self._train_iter_count = sdict["train_iter_count"]
 
         self.model.eval()
         

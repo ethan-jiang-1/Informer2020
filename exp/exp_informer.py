@@ -177,12 +177,12 @@ class Exp_Informer(Exp_Basic):
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
-            
+            self._train_iter_count += 1
+
             self.model.train()
             epoch_time = time.time()
             for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(train_loader):
                 iter_count += 1
-                self._train_iter_count += 1
                 
                 model_optim.zero_grad()
                 

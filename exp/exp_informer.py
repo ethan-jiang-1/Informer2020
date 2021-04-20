@@ -23,13 +23,21 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class Exp_Informer(Exp_Basic):
+    c_writer = None
+    
     def __init__(self, args):
         super(Exp_Informer, self).__init__(args)
         self._global_iter_count = 0
 
     def get_global_iter_count(self):
         return self._global_iter_count
-    
+
+    @classmethod
+    def get_writer(cls):
+        if Exp_Informer.c_writer is None:
+            Exp_Informer.c_writer = SummaryWriter()
+        return Exp_Informer.c_writer
+        
     def _build_model(self):
         model_dict = {
             'informer':Informer,
@@ -241,7 +249,8 @@ class Exp_Informer(Exp_Basic):
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
-            writer = SummaryWriter()
+
+            writer = Exp_Informer.get_writer()
             writer.add_scalar("train_loss", train_loss, global_step=self.get_global_iter_count())
             writer.add_scalar("vali_loss", vali_loss, global_step=self.get_global_iter_count())
             writer.add_scalar("test_loss", test_loss, global_step=self.get_global_iter_count())

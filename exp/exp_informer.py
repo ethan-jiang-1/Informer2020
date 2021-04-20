@@ -271,8 +271,8 @@ class Exp_Informer(Exp_Basic):
         
         return best_model_path
 
-    def test(self, setting):
-        test_data, test_loader = self._get_data(flag='test')
+    def test(self, setting, data_type="test"):
+        test_data, test_loader = self._get_data(flag=data_type)
         
         self.model.eval()
         
@@ -326,9 +326,9 @@ class Exp_Informer(Exp_Basic):
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
 
-        np.save(folder_path+'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
-        np.save(folder_path+'pred.npy', preds)
-        np.save(folder_path+'true.npy', trues)
+        np.save(folder_path+'{}_metrics.npy'.format(data_type), np.array([mae, mse, rmse, mape, mspe]))
+        np.save(folder_path+'{}_pred.npy'.format(data_type), preds)
+        np.save(folder_path+'{}_true.npy'.format(data_type), trues)
 
         return
 

@@ -323,6 +323,17 @@ class Exp_Informer(Exp_Basic):
 
         return
 
+    def load_saved_best_model(self, setting):
+        path = os.path.join(self.args.checkpoints, setting)
+        best_model_path = path+'/'+'checkpoint.pth'
+        if os.path.isfile(best_model_path):
+            sdict = torch.load(best_model_path)
+            self.model.load_state_dict(sdict["state_dict"])
+            self._global_iter_count = sdict["global_iter_count"]
+            print("best_model found and loaded", best_model_path, self.get_global_iter_count())
+        else:
+            print("no saved best_model found")
+
     def predict(self, setting, load=False):
         pred_data, pred_loader = self._get_data(flag='pred')
         

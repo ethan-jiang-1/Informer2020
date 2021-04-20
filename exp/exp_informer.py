@@ -249,7 +249,7 @@ class Exp_Informer(Exp_Basic):
         best_model_path = path+'/'+'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
         
-        return self.model
+        return best_model_path
 
     def test(self, setting):
         test_data, test_loader = self._get_data(flag='test')

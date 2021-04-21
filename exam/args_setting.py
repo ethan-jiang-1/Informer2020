@@ -122,6 +122,9 @@ class Args(object):
         args_alter.seq_len = 96 # input sequence length of Informer encoder
         args_alter.label_len = 48 # start token length of Informer decoder
         args_alter.pred_len = 24 # prediction sequence length
+        args_alter.learning_rate = 0.00005 #0.0001
+        args_alter.train_epochs = 20 #20 #6
+
         return cls.create_args_base(args_alter = args_alter)
 
     @classmethod
@@ -133,6 +136,8 @@ class Args(object):
         args_alter.seq_len = 96 # input sequence length of Informer encoder
         args_alter.label_len = 48 # start token length of Informer decoder
         args_alter.pred_len = 24 # prediction sequence length
+        args_alter.learning_rate = 0.00005 #0.0001
+        args_alter.train_epochs = 20 #20 #6
         return cls.create_args_base(args_alter = args_alter)
 
     @classmethod
@@ -144,6 +149,8 @@ class Args(object):
         args_alter.seq_len = 96 # input sequence length of Informer encoder
         args_alter.label_len = 48 # start token length of Informer decoder
         args_alter.pred_len = 24 # prediction sequence length
+        args_alter.learning_rate = 0.00005 #0.0001
+        args_alter.train_epochs = 20 #20 #6
         return cls.create_args_base(args_alter = args_alter)
 
     @classmethod

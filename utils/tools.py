@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import os
 
 def adjust_learning_rate(optimizer, epoch, args):
     # lr = args.learning_rate * (0.2 ** (epoch // 2))
@@ -31,7 +32,7 @@ class EarlyStopping:
         score = -val_loss
         if self.best_score is None:
             self.best_score = score
-            #self.save_checkpoint(val_loss, model, path)
+            self.save_checkpoint(val_loss, model, path)
         elif score < self.best_score + self.delta:
             self.counter += 1
             print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
@@ -46,13 +47,19 @@ class EarlyStopping:
         if self.verbose:
             print(f'##Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         
-        sdict = {}
-        sdict["state_dict"] = model.state_dict()
-        sdict["optm_state_dict"] = self.trainer._select_optimizer().state_dict()
-        sdict["global_iter_count"] = self.trainer.get_global_iter_count()
-        #sdict["loss"] = self.trainer._select_criterion()
-        #torch.save(model.state_dict(), path+'/'+'checkpoint.pth')
-        torch.save(sdict, path+'/'+'checkpoint.pth')
+        saved_path = path+'/'+'checkpoint.pth'
+        save = False
+        if os.path.isfile(saved_path):
+            sdict = torch.load(saved_path)
+            if "val_loss" in sdict:
+                if sdict["val_loss"] > val_loss:
+                    save = True
+            else:
+                save = True
+        else:
+            save = True
+        if save:
+            self.trainer.save_cur_state(saved_path, val_loss=val_loss)
         self.val_loss_min = val_loss
 
 class dotdict(dict):

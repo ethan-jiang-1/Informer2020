@@ -269,12 +269,31 @@ class Exp_Informer(Exp_Basic):
             adjust_learning_rate(model_optim, epoch+1, self.args)
             
         best_model_path = path+'/'+'checkpoint.pth'
-        sdict = torch.load(best_model_path)
-        self.model.load_state_dict(sdict["state_dict"])
-        self._global_iter_count = sdict["global_iter_count"]
-        
+        if os.path.isfile(best_model_path):
+            if not self._load_saved_state(best_model_path):
+                best_model_path = None
+            
         return best_model_path
+    
+    def _load_saved_state(self, best_model_path):
+        if os.path.isfile(best_model_path):
+            sdict = torch.load(best_model_path)
+            self.model.load_state_dict(sdict["state_dict"])
+            self._select_optimizer().load_state_dict(sdict["optm_state_dict"])
+            self._global_iter_count = sdict["global_iter_count"]
+            return True
+        return False
 
+    def save_cur_state(self, model_path, val_loss=100):
+        sdict = {}
+        sdict["state_dict"] = self.model.state_dict()
+        sdict["optm_state_dict"] = self._select_optimizer().state_dict()
+        sdict["global_iter_count"] = self.get_global_iter_count()
+        sdict["val_loss"] = val_loss
+        #sdict["loss"] = self.trainer._select_criterion()
+        #torch.save(model.state_dict(), path+'/'+'checkpoint.pth')
+        torch.save(sdict, model_path)
+    
     def test(self, setting, data_type="test"):
         print("test data_type", data_type)
         test_data, test_loader = self._get_data(flag=data_type)
@@ -341,17 +360,9 @@ class Exp_Informer(Exp_Basic):
         path = os.path.join(self.args.checkpoints, setting)
         best_model_path = path+'/'+'checkpoint.pth'
         if os.path.isfile(best_model_path):
-            try:
-                sdict = torch.load(best_model_path)
-
-                self.model.load_state_dict(sdict["state_dict"])
-                self._select_optimizer().load_state_dict(sdict["optm_state_dict"])
-                self._global_iter_count = sdict["global_iter_count"]
-                #self.criterion = sdict["loss"]
+            if self._load_saved_state(best_model_path):
                 print("best_model found and loaded", best_model_path, self.get_global_iter_count())
                 return True
-            except Exception as ex:
-                print("failed to load best_model", best_model_path, str(ex))
         else:
             print("no saved best_model found")
         return False
@@ -362,9 +373,8 @@ class Exp_Informer(Exp_Basic):
         if load:
             path = os.path.join(self.args.checkpoints, setting)
             best_model_path = path+'/'+'checkpoint.pth'
-            sdict = torch.load(best_model_path)
-            self.model.load_state_dict(sdict["state_dict"])
-            self._global_iter_count = sdict["global_iter_count"]
+            if os.path.isfile(best_model_path):
+                self._load_saved_state(best_model_path)
 
         self.model.eval()
         

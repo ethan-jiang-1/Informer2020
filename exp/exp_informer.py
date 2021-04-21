@@ -94,7 +94,8 @@ class Exp_Informer(Exp_Basic):
             Data = Dataset_Pred
         else:
             shuffle_flag = True; drop_last = True; batch_size = args.batch_size; freq=args.freq
-        
+        scale = False
+
         data_set = Data(
             root_path=args.root_path,
             data_path=args.data_path,
@@ -104,7 +105,8 @@ class Exp_Informer(Exp_Basic):
             target=args.target,
             inverse=args.inverse,
             timeenc=timeenc,
-            freq=freq
+            freq=freq,
+            scale=scale
         )
         print(flag, len(data_set))
         data_loader = DataLoader(

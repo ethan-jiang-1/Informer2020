@@ -6,11 +6,65 @@ import torch
 from torch.utils.data import Dataset #, DataLoader
 # from sklearn.preprocessing import StandardScaler
 
-from utils.tools import StandardScaler
-from utils.timefeatures import time_features
+print("###load data_loader_pred")
 
 import warnings
 warnings.filterwarnings('ignore')
+
+class BpSeqsPred(object):
+    bp_seq_x = None
+    bp_seq_y = None
+    bp_seq_x_mark = None
+    bp_seq_y_mark = None
+
+    @classmethod
+    def set_bypass_seqs(cls, seq_x, seq_y, seq_x_mark, seq_y_mark):
+        print("Dataset_Pred:received bypass seqs")
+        cls.bp_seq_x = seq_x
+        cls.bp_seq_y = seq_y
+        cls.bp_seq_x_mark = seq_x_mark
+        cls.bp_seq_y_mark = seq_y_mark
+
+    @classmethod
+    def set_bypass_seqs_numpy(cls, seq_x, seq_y, seq_x_mark, seq_y_mark, args):
+        print("Dataset_Pred:received bypass seqs")
+        from exp.exp_basic import select_device
+        device = select_device(args)
+        cls.bp_seq_x = torch.from_numpy(seq_x).to(device)
+        cls.bp_seq_y = torch.from_numpy(seq_y).to(device)
+        cls.bp_seq_x_mark = torch.from_numpy(seq_x_mark).to(device)
+        cls.bp_seq_y_mark = torch.from_numpy(seq_y_mark).to(device)
+
+    @classmethod
+    def reset_bypass_seqs(cls):
+        print("Dataset_Pred: reset bypass seqs")
+        cls.bp_seq_x = None
+        cls.bp_seq_y = None
+        cls.bp_seq_x_mark = None
+        cls.bp_seq_y_mark = None 
+
+    @classmethod
+    def has_bypass_seqs(cls):
+        if cls.bp_seq_x is not None:
+            return True
+        return False
+
+    @classmethod
+    def get_bypass_seqs(cls):
+        return cls.bp_seq_x, cls.bp_seq_y, cls.bp_seq_x_mark, cls.bp_seq_y_mark
+
+    @classmethod
+    def _sio(cls, batch_tensor):
+        len_size = len(batch_tensor.shape)
+        if len_size == 3:
+            return batch_tensor[0]
+        elif len_size == 2:
+            return batch_tensor
+        raise ValueError("noidea")
+
+    @classmethod
+    def get_bypass_seqs_item_one(cls):
+        return cls._sio(cls.bp_seq_x), cls._sio(cls.bp_seq_y), cls._sio(cls.bp_seq_x_mark), cls._sio(cls.bp_seq_y_mark)
 
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None, 
@@ -40,10 +94,23 @@ class Dataset_Pred(Dataset):
         self.data_path = data_path
         self.__read_data__()
 
+    def _find_cvs_path(self):
+        path = os.path.join(self.root_path, self.data_path)
+        if os.path.isfile(path):
+            return path
+        #path = path.replace("./", "/")
+        #path = app_root + path
+        #if os.path.isfile(path):
+        #    return path
+        raise ValueError("no cvs")
+        
+
     def __read_data__(self):
+        from utils.tools import StandardScaler
+        from utils.timefeatures import time_features
+
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        df_raw = pd.read_csv(self._find_cvs_path())
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
@@ -81,6 +148,10 @@ class Dataset_Pred(Dataset):
         self.data_stamp = data_stamp
     
     def __getitem__(self, index):
+        if BpSeqsPred.has_bypass_seqs():
+            print("Dataset_Pred:return bypass seqs")
+            return BpSeqsPred.get_bypass_seqs_item_one()
+
         s_begin = index
         s_end = s_begin + self.seq_len
         r_begin = s_end - self.label_len
@@ -98,3 +169,5 @@ class Dataset_Pred(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+
+

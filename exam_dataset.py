@@ -1,12 +1,12 @@
 
 #python -u main_informer.py --model informer --data ETTh1 --attn prob --freq h
 
-from exam.args_setting import create_args_base
+from exam.args_setting import Args
 from exp.exp_informer import Exp_Informer
 from exam.inspector import Inspector
 
 
-args = create_args_base()
+args = Args.create_args_base()
 args.root_path = "./data/ETT"
 #args.use_gpu = False
 
